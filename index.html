@@ -225,6 +225,19 @@
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .spent-col { color: var(--danger); }
   .received-col { color: var(--accent2); }
+  .del-col { text-align: center; width: 36px; }
+  .del-btn {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    font-size: 15px;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color .15s, background .15s;
+  }
+  .del-btn:hover { color: var(--danger); background: rgba(255,107,107,0.12); }
+  .del-btn:disabled { opacity: .4; cursor: default; }
 
   .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
   .empty-state .big { font-size: 40px; margin-bottom: 10px; }
@@ -267,15 +280,15 @@
       <div class="summary-grid">
         <div class="stat-card" id="overallCard">
           <div class="label">Total left to collect</div>
-          <div class="value" id="overallNet">$0.00</div>
+          <div class="value" id="overallNet">PKR 0.00</div>
         </div>
         <div class="stat-card">
           <div class="label">Total spent (all time)</div>
-          <div class="value" id="overallSpent">$0.00</div>
+          <div class="value" id="overallSpent">PKR 0.00</div>
         </div>
         <div class="stat-card">
           <div class="label">Total received (all time)</div>
-          <div class="value" id="overallReceived">$0.00</div>
+          <div class="value" id="overallReceived">PKR 0.00</div>
         </div>
         <div class="stat-card">
           <div class="label">Months tracked</div>
@@ -329,7 +342,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
   // ------------------------------------------------------------------
   // Change this passcode any time -- it's the shared code your team
@@ -407,7 +420,7 @@
     const today = new Date();
     fDate.value = today.toISOString().slice(0, 10);
 
-    const fmt = n => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = n => 'PKR ' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     const monthLabel = (ym) => {
       const [y, m] = ym.split('-').map(Number);
@@ -519,7 +532,7 @@
           <div class="month-body">
             <table>
               <thead>
-                <tr><th>Date</th><th>Description</th><th class="num">Spent</th><th class="num">Received</th></tr>
+                <tr><th>Date</th><th>Description</th><th class="num">Spent</th><th class="num">Received</th><th class="del-col"></th></tr>
               </thead>
               <tbody>
                 ${g.items.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(it => `
@@ -528,6 +541,7 @@
                     <td>${escapeHtml(it.description || '')}</td>
                     <td class="num spent-col">${it.spent ? fmt(it.spent) : '—'}</td>
                     <td class="num received-col">${it.received ? fmt(it.received) : '—'}</td>
+                    <td class="del-col"><button class="del-btn" data-id="${it.id}" title="Delete this transaction">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -539,6 +553,21 @@
           groupEl.classList.toggle('open');
           if (groupEl.classList.contains('open')) openMonths.add(ym);
           else openMonths.delete(ym);
+        });
+
+        groupEl.querySelectorAll('.del-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute('data-id');
+            if (!confirm('Delete this transaction? This cannot be undone.')) return;
+            btn.disabled = true;
+            try {
+              await deleteDoc(doc(db, 'transactions', id));
+            } catch (err) {
+              alert('Could not delete: ' + err.message);
+              btn.disabled = false;
+            }
+          });
         });
 
         monthsContainer.appendChild(groupEl);
