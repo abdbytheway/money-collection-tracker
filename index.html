@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Money Collection Tracker</title>
+<style>
+  :root {
+    --bg1: #0f0c29;
+    --bg2: #302b63;
+    --bg3: #24243e;
+    --accent: #7f5af0;
+    --accent2: #2cb67d;
+    --danger: #ff6b6b;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.12);
+    --text: #f4f4f8;
+    --text-dim: #b8b8c8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+    background-attachment: fixed;
+    color: var(--text);
+  }
+  #lockScreen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .lock-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .lock-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+  .lock-card h1 {
+    font-size: 20px;
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+  .lock-card p {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin: 0 0 22px;
+  }
+  input {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input:focus { border-color: var(--accent); }
+  button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+  }
+  .btn-primary {
+    margin-top: 14px;
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), #6246ea);
+    color: #fff;
+    font-size: 15px;
+    letter-spacing: .3px;
+    box-shadow: 0 8px 20px rgba(127,90,240,0.35);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(127,90,240,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+  #lockError {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 12px;
+    min-height: 16px;
+  }
+
+  #app { display: none; min-height: 100vh; padding: 28px 20px 80px; }
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  header.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header.topbar h1 {
+    font-size: 22px;
+    margin: 0;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  header.topbar h1 .emoji { font-size: 24px; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent2);
+    display: inline-block;
+    box-shadow: 0 0 8px var(--accent2);
+  }
+  .muted { color: var(--text-dim); font-size: 12px; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 18px 20px;
+  }
+  .stat-card .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 8px;
+  }
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .stat-card.positive .value { color: var(--danger); }
+  .stat-card.settled .value { color: var(--accent2); }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 22px;
+  }
+  .panel h2 {
+    font-size: 16px;
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: end;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .form-actions { margin-top: 14px; display: flex; justify-content: flex-end; }
+  .btn-add {
+    padding: 12px 26px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent2), #1c9c6b);
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 8px 20px rgba(44,182,125,0.3);
+    transition: transform .15s;
+  }
+  .btn-add:hover { transform: translateY(-1px); }
+  #formMsg { font-size: 13px; margin-top: 10px; min-height: 16px; }
+  #formMsg.error { color: var(--danger); }
+  #formMsg.ok { color: var(--accent2); }
+
+  .month-group { margin-bottom: 14px; }
+  .month-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .month-header:hover { background: rgba(255,255,255,0.03); border-radius: 14px; }
+  .month-title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+  .chevron { transition: transform .2s; color: var(--text-dim); }
+  .month-group.open .chevron { transform: rotate(90deg); }
+  .month-totals { display: flex; gap: 18px; font-size: 13px; }
+  .month-totals span b { font-weight: 700; }
+  .month-body { display: none; padding: 0 20px 16px; }
+  .month-group.open .month-body { display: block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--card-border); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  tr:last-child td { border-bottom: none; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .spent-col { color: var(--danger); }
+  .received-col { color: var(--accent2); }
+
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
+  .empty-state .big { font-size: 40px; margin-bottom: 10px; }
+
+  footer.note {
+    margin-top: 30px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 520px) {
+    .month-totals { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Passcode gate -->
+  <div id="lockScreen">
+    <div class="lock-card">
+      <div class="lock-icon">🔒</div>
+      <h1>Money Collection Tracker</h1>
+      <p>Enter the shared passcode to continue</p>
+      <input type="password" id="passcodeInput" placeholder="Passcode" autocomplete="off" />
+      <button class="btn-primary" id="unlockBtn">Unlock</button>
+      <div id="lockError"></div>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="app">
+    <div class="wrap">
+      <header class="topbar">
+        <h1><span class="emoji">💰</span> Money Collection Tracker</h1>
+        <div class="muted"><span class="status-dot"></span> <span id="connStatus">Connected</span></div>
+      </header>
+
+      <div class="summary-grid">
+        <div class="stat-card" id="overallCard">
+          <div class="label">Total left to collect</div>
+          <div class="value" id="overallNet">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total spent (all time)</div>
+          <div class="value" id="overallSpent">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total received (all time)</div>
+          <div class="value" id="overallReceived">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Months tracked</div>
+          <div class="value" id="monthCount">0</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Add a transaction</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="fDate">Date</label>
+            <input type="date" id="fDate" />
+          </div>
+          <div class="field">
+            <label for="fDesc">Description</label>
+            <input type="text" id="fDesc" placeholder="e.g. Client payment, supplies" />
+          </div>
+          <div class="field">
+            <label for="fSpent">Amount spent</label>
+            <input type="number" id="fSpent" placeholder="0.00" step="0.01" min="0" />
+          </div>
+          <div class="field">
+            <label for="fReceived">Amount received</label>
+            <input type="number" id="fReceived" placeholder="0.00" step="0.01" min="0" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-add" id="addBtn">Add transaction</button>
+        </div>
+        <div id="formMsg"></div>
+      </div>
+
+      <div class="panel" id="historyPanel">
+        <h2>Monthly history</h2>
+        <div id="monthsContainer">
+          <div class="empty-state">
+            <div class="big">📭</div>
+            <div>No transactions yet — add your first one above.</div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="note">
+        Data is stored securely in Firebase and kept indefinitely (at least the last 3 months are always available).<br/>
+        Access is protected by a shared passcode. To change the passcode, edit the <code>APP_PASSCODE</code> constant in this file.
+      </footer>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+  // ------------------------------------------------------------------
+  // Change this passcode any time -- it's the shared code your team
+  // uses to open the tracker. It is a simple convenience gate, not a
+  // full security boundary (see the note in the footer / handoff doc).
+  // ------------------------------------------------------------------
+  const APP_PASSCODE = "collect2026";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0uvrmeBf4JiXdHQIDN-w4jxvK7TBKM_Y",
+    authDomain: "money-collection-tracker.firebaseapp.com",
+    projectId: "money-collection-tracker",
+    storageBucket: "money-collection-tracker.firebasestorage.app",
+    messagingSenderId: "482368738834",
+    appId: "1:482368738834:web:1d9d4f79b923738805aacb"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const lockScreen = document.getElementById('lockScreen');
+  const appEl = document.getElementById('app');
+  const passcodeInput = document.getElementById('passcodeInput');
+  const unlockBtn = document.getElementById('unlockBtn');
+  const lockError = document.getElementById('lockError');
+
+  function tryUnlock() {
+    const val = passcodeInput.value.trim();
+    if (val === APP_PASSCODE) {
+      lockError.textContent = '';
+      signInAnonymously(auth).catch(err => {
+        lockError.textContent = 'Could not connect: ' + err.message;
+      });
+    } else {
+      lockError.textContent = 'Incorrect passcode. Try again.';
+      passcodeInput.value = '';
+      passcodeInput.focus();
+    }
+  }
+  unlockBtn.addEventListener('click', tryUnlock);
+  passcodeInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      lockScreen.style.display = 'none';
+      appEl.style.display = 'block';
+      startApp();
+    }
+  });
+
+  // ------------------------------------------------------------------
+  // Main app logic
+  // ------------------------------------------------------------------
+  let started = false;
+  function startApp() {
+    if (started) return;
+    started = true;
+
+    const fDate = document.getElementById('fDate');
+    const fDesc = document.getElementById('fDesc');
+    const fSpent = document.getElementById('fSpent');
+    const fReceived = document.getElementById('fReceived');
+    const addBtn = document.getElementById('addBtn');
+    const formMsg = document.getElementById('formMsg');
+    const monthsContainer = document.getElementById('monthsContainer');
+    const overallNet = document.getElementById('overallNet');
+    const overallSpent = document.getElementById('overallSpent');
+    const overallReceived = document.getElementById('overallReceived');
+    const monthCount = document.getElementById('monthCount');
+    const overallCard = document.getElementById('overallCard');
+    const connStatus = document.getElementById('connStatus');
+
+    // Default the date field to today
+    const today = new Date();
+    fDate.value = today.toISOString().slice(0, 10);
+
+    const fmt = n => '$' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const monthLabel = (ym) => {
+      const [y, m] = ym.split('-').map(Number);
+      const d = new Date(y, m - 1, 1);
+      return d.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+    };
+
+    addBtn.addEventListener('click', async () => {
+      const date = fDate.value;
+      const desc = fDesc.value.trim();
+      const spent = parseFloat(fSpent.value) || 0;
+      const received = parseFloat(fReceived.value) || 0;
+
+      if (!date) {
+        formMsg.className = 'error';
+        formMsg.textContent = 'Please pick a date.';
+        return;
+      }
+      if (!desc) {
+        formMsg.className = 'error';
+        formMsg.textContent = 'Please add a short description.';
+        return;
+      }
+      if (spent === 0 && received === 0) {
+        formMsg.className = 'error';
+        formMsg.textContent = 'Enter an amount spent or received.';
+        return;
+      }
+
+      addBtn.disabled = true;
+      formMsg.className = '';
+      formMsg.textContent = 'Saving...';
+      try {
+        await addDoc(collection(db, 'transactions'), {
+          date, description: desc, spent, received,
+          createdAt: serverTimestamp()
+        });
+        formMsg.className = 'ok';
+        formMsg.textContent = 'Transaction added.';
+        fDesc.value = '';
+        fSpent.value = '';
+        fReceived.value = '';
+        fDate.value = today.toISOString().slice(0, 10);
+      } catch (err) {
+        formMsg.className = 'error';
+        formMsg.textContent = 'Could not save: ' + err.message;
+      } finally {
+        addBtn.disabled = false;
+      }
+    });
+
+    const q = query(collection(db, 'transactions'), orderBy('date', 'desc'));
+    const openMonths = new Set();
+    let firstLoad = true;
+
+    onSnapshot(q, snapshot => {
+      connStatus.textContent = 'Connected';
+      const rows = [];
+      snapshot.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
+
+      if (rows.length === 0) {
+        monthsContainer.innerHTML = '<div class="empty-state"><div class="big">📭</div><div>No transactions yet — add your first one above.</div></div>';
+        overallNet.textContent = fmt(0);
+        overallSpent.textContent = fmt(0);
+        overallReceived.textContent = fmt(0);
+        monthCount.textContent = '0';
+        overallCard.className = 'stat-card settled';
+        return;
+      }
+
+      const groups = {};
+      let totalSpent = 0, totalReceived = 0;
+      rows.forEach(r => {
+        const ym = (r.date || '').slice(0, 7) || 'Unknown';
+        if (!groups[ym]) groups[ym] = { items: [], spent: 0, received: 0 };
+        groups[ym].items.push(r);
+        groups[ym].spent += Number(r.spent) || 0;
+        groups[ym].received += Number(r.received) || 0;
+        totalSpent += Number(r.spent) || 0;
+        totalReceived += Number(r.received) || 0;
+      });
+
+      const sortedMonths = Object.keys(groups).sort().reverse();
+      if (firstLoad) {
+        sortedMonths.slice(0, 1).forEach(m => openMonths.add(m));
+        firstLoad = false;
+      }
+
+      monthsContainer.innerHTML = '';
+      sortedMonths.forEach(ym => {
+        const g = groups[ym];
+        const net = g.spent - g.received;
+        const isOpen = openMonths.has(ym);
+
+        const groupEl = document.createElement('div');
+        groupEl.className = 'month-group' + (isOpen ? ' open' : '');
+
+        const netColor = net > 0 ? 'style="color:var(--danger)"' : 'style="color:var(--accent2)"';
+
+        groupEl.innerHTML = `
+          <div class="month-header">
+            <div class="month-title"><span class="chevron">▶</span> ${monthLabel(ym)}</div>
+            <div class="month-totals">
+              <span class="muted">Spent: <b class="spent-col">${fmt(g.spent)}</b></span>
+              <span class="muted">Received: <b class="received-col">${fmt(g.received)}</b></span>
+              <span class="muted">To collect: <b ${netColor}>${fmt(net)}</b></span>
+            </div>
+          </div>
+          <div class="month-body">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Description</th><th class="num">Spent</th><th class="num">Received</th></tr>
+              </thead>
+              <tbody>
+                ${g.items.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(it => `
+                  <tr>
+                    <td>${it.date || ''}</td>
+                    <td>${escapeHtml(it.description || '')}</td>
+                    <td class="num spent-col">${it.spent ? fmt(it.spent) : '—'}</td>
+                    <td class="num received-col">${it.received ? fmt(it.received) : '—'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        groupEl.querySelector('.month-header').addEventListener('click', () => {
+          groupEl.classList.toggle('open');
+          if (groupEl.classList.contains('open')) openMonths.add(ym);
+          else openMonths.delete(ym);
+        });
+
+        monthsContainer.appendChild(groupEl);
+      });
+
+      const overall = totalSpent - totalReceived;
+      overallNet.textContent = fmt(overall);
+      overallSpent.textContent = fmt(totalSpent);
+      overallReceived.textContent = fmt(totalReceived);
+      monthCount.textContent = String(sortedMonths.length);
+      overallCard.className = 'stat-card' + (overall > 0 ? ' positive' : ' settled');
+    }, err => {
+      connStatus.textContent = 'Connection error';
+      formMsg.className = 'error';
+      formMsg.textContent = 'Sync error: ' + err.message;
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+</script>
+</body>
+</html>
