@@ -6,172 +6,191 @@
 <title>Money Collection Tracker</title>
 <style>
   :root {
-    --bg1: #0f0c29;
-    --bg2: #302b63;
-    --bg3: #24243e;
-    --accent: #7f5af0;
-    --accent2: #2cb67d;
-    --danger: #ff6b6b;
-    --card: rgba(255,255,255,0.06);
-    --card-border: rgba(255,255,255,0.12);
-    --text: #f4f4f8;
-    --text-dim: #b8b8c8;
+    --bg: #0a0a0d;
+    --surface: rgba(255,255,255,0.035);
+    --surface-hover: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.09);
+    --text: #f0f0f3;
+    --text-dim: #8b8b96;
+    --text-faint: #55555f;
+    --accent: #6d6df6;
+    --accent-hover: #5c5cef;
+    --danger: #f2545c;
+    --success: #30c48d;
+    --radius: 14px;
+    --ease: cubic-bezier(.16,.84,.44,1);
   }
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
     padding: 0;
     min-height: 100%;
-    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-    background: linear-gradient(135deg, var(--bg1), var(--bg2) 50%, var(--bg3));
-    background-attachment: fixed;
+    font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
     color: var(--text);
+    -webkit-font-smoothing: antialiased;
   }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+  }
+
   #lockScreen {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 24px;
+    animation: fadeIn .4s var(--ease);
   }
   .lock-card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    backdrop-filter: blur(16px);
-    border-radius: 20px;
-    padding: 40px 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 44px 32px;
     width: 100%;
-    max-width: 380px;
+    max-width: 360px;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    animation: fadeInUp .5s var(--ease);
   }
   .lock-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 18px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 22px;
+    color: var(--text-dim);
   }
+  .lock-icon svg { width: 100%; height: 100%; }
   .lock-card h1 {
-    font-size: 20px;
+    font-size: 18px;
     margin: 0 0 6px;
     font-weight: 600;
+    letter-spacing: -.2px;
   }
   .lock-card p {
     color: var(--text-dim);
     font-size: 13px;
-    margin: 0 0 22px;
+    margin: 0 0 26px;
   }
   input {
     width: 100%;
-    padding: 13px 14px;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    background: rgba(255,255,255,0.05);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
     color: var(--text);
     font-size: 15px;
     outline: none;
-    transition: border-color .2s;
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
   }
-  input:focus { border-color: var(--accent); }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(109,109,246,0.18); }
   button {
     cursor: pointer;
     border: none;
     font-family: inherit;
     font-weight: 600;
+    transition: transform .15s var(--ease), background-color .15s var(--ease), box-shadow .15s var(--ease), opacity .15s var(--ease);
   }
+  button:active { transform: scale(.97); }
   .btn-primary {
-    margin-top: 14px;
+    margin-top: 16px;
     width: 100%;
-    padding: 13px 14px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent), #6246ea);
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--accent);
     color: #fff;
-    font-size: 15px;
-    letter-spacing: .3px;
-    box-shadow: 0 8px 20px rgba(127,90,240,0.35);
-    transition: transform .15s, box-shadow .15s;
+    font-size: 14.5px;
+    letter-spacing: .2px;
   }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(127,90,240,0.45); }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:hover { background: var(--accent-hover); }
   #lockError {
     color: var(--danger);
     font-size: 13px;
-    margin-top: 12px;
+    margin-top: 14px;
     min-height: 16px;
   }
 
-  #app { display: none; min-height: 100vh; padding: 28px 20px 80px; }
-  .wrap { max-width: 880px; margin: 0 auto; }
+  #app { display: none; min-height: 100vh; padding: 40px 20px 90px; }
+  .wrap { max-width: 760px; margin: 0 auto; animation: fadeIn .45s var(--ease); }
 
   header.topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 22px;
+    margin-bottom: 28px;
     flex-wrap: wrap;
-    gap: 12px;
-  }
-  header.topbar h1 {
-    font-size: 22px;
-    margin: 0;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
     gap: 10px;
   }
-  header.topbar h1 .emoji { font-size: 24px; }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent2);
-    display: inline-block;
-    box-shadow: 0 0 8px var(--accent2);
+  header.topbar h1 {
+    font-size: 20px;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -.2px;
   }
-  .muted { color: var(--text-dim); font-size: 12px; }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--success);
+    display: inline-block;
+    animation: pulseDot 2s ease-in-out infinite;
+  }
+  .muted { color: var(--text-dim); font-size: 12.5px; display: inline-flex; align-items: center; gap: 7px; }
 
   .summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-    margin-bottom: 26px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
   }
   .stat-card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    backdrop-filter: blur(12px);
-    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 18px 20px;
+    animation: fadeInUp .5s var(--ease) backwards;
+    transition: border-color .2s var(--ease), transform .2s var(--ease);
   }
+  .stat-card:hover { border-color: rgba(255,255,255,0.16); transform: translateY(-1px); }
+  .stat-card:nth-child(1) { animation-delay: 0ms; }
+  .stat-card:nth-child(2) { animation-delay: 40ms; }
+  .stat-card:nth-child(3) { animation-delay: 80ms; }
+  .stat-card:nth-child(4) { animation-delay: 120ms; }
   .stat-card .label {
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: .6px;
-    margin-bottom: 8px;
+    letter-spacing: .5px;
+    margin-bottom: 10px;
   }
   .stat-card .value {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: color .25s var(--ease);
   }
   .stat-card.positive .value { color: var(--danger); }
-  .stat-card.settled .value { color: var(--accent2); }
+  .stat-card.settled .value { color: var(--success); }
 
   .panel {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    backdrop-filter: blur(12px);
-    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 22px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
+    animation: fadeInUp .5s var(--ease) backwards;
+    animation-delay: 160ms;
   }
   .panel h2 {
-    font-size: 16px;
+    font-size: 15px;
     margin: 0 0 16px;
     font-weight: 600;
+    letter-spacing: -.1px;
   }
   .form-grid {
     display: grid;
@@ -185,73 +204,103 @@
     color: var(--text-dim);
     margin-bottom: 6px;
   }
-  .form-actions { margin-top: 14px; display: flex; justify-content: flex-end; }
+  .form-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
   .btn-add {
-    padding: 12px 26px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent2), #1c9c6b);
-    color: #fff;
+    padding: 11px 24px;
+    border-radius: 10px;
+    background: var(--success);
+    color: #08201a;
     font-size: 14px;
-    box-shadow: 0 8px 20px rgba(44,182,125,0.3);
-    transition: transform .15s;
   }
-  .btn-add:hover { transform: translateY(-1px); }
-  #formMsg { font-size: 13px; margin-top: 10px; min-height: 16px; }
+  .btn-add:hover { background: #29b07d; }
+  #formMsg { font-size: 13px; margin-top: 10px; min-height: 16px; transition: opacity .2s var(--ease); }
   #formMsg.error { color: var(--danger); }
-  #formMsg.ok { color: var(--accent2); }
+  #formMsg.ok { color: var(--success); }
 
-  .month-group { margin-bottom: 14px; }
+  .month-group {
+    border-bottom: 1px solid var(--border);
+    animation: fadeInUp .4s var(--ease) backwards;
+  }
+  .month-group:last-child { border-bottom: none; }
   .month-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 15px 4px;
     cursor: pointer;
     user-select: none;
+    gap: 12px;
+    flex-wrap: wrap;
+    transition: opacity .15s var(--ease);
   }
-  .month-header:hover { background: rgba(255,255,255,0.03); border-radius: 14px; }
-  .month-title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 10px; }
-  .chevron { transition: transform .2s; color: var(--text-dim); }
+  .month-header:hover { opacity: .85; }
+  .month-title { font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
+  .chevron { color: var(--text-faint); transition: transform .25s var(--ease); display: flex; }
+  .chevron svg { width: 15px; height: 15px; }
   .month-group.open .chevron { transform: rotate(90deg); }
-  .month-totals { display: flex; gap: 18px; font-size: 13px; }
-  .month-totals span b { font-weight: 700; }
-  .month-body { display: none; padding: 0 20px 16px; }
-  .month-group.open .month-body { display: block; }
+  .month-totals { display: flex; gap: 16px; font-size: 12.5px; flex-wrap: wrap; }
+  .month-totals span b { font-weight: 600; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--card-border); font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
-  td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .month-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .32s var(--ease);
+  }
+  .month-group.open .month-body { grid-template-rows: 1fr; }
+  .month-body-inner { overflow: hidden; min-height: 0; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 480px; }
+  th { text-align: left; color: var(--text-dim); font-weight: 500; padding: 8px 6px 10px; border-bottom: 1px solid var(--border); font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; }
+  td { padding: 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.04); }
   tr:last-child td { border-bottom: none; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .spent-col { color: var(--danger); }
-  .received-col { color: var(--accent2); }
-  .del-col { text-align: center; width: 36px; }
+  .received-col { color: var(--success); }
+  .del-col { text-align: center; width: 34px; }
   .del-btn {
     background: transparent;
-    color: var(--text-dim);
+    color: var(--text-faint);
     border: none;
-    font-size: 15px;
-    line-height: 1;
-    padding: 4px 8px;
+    padding: 5px;
     border-radius: 6px;
-    transition: color .15s, background .15s;
+    display: inline-flex;
+    transition: color .15s var(--ease), background-color .15s var(--ease);
   }
-  .del-btn:hover { color: var(--danger); background: rgba(255,107,107,0.12); }
+  .del-btn svg { width: 15px; height: 15px; }
+  .del-btn:hover { color: var(--danger); background: rgba(242,84,92,0.1); }
   .del-btn:disabled { opacity: .4; cursor: default; }
 
-  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); }
-  .empty-state .big { font-size: 40px; margin-bottom: 10px; }
+  .empty-state { text-align: center; padding: 46px 20px; color: var(--text-dim); animation: fadeIn .4s var(--ease); }
+  .empty-state .icon { width: 34px; height: 34px; margin: 0 auto 14px; color: var(--text-faint); }
+  .empty-state .icon svg { width: 100%; height: 100%; }
+  .empty-state div.msg { font-size: 13.5px; }
 
   footer.note {
-    margin-top: 30px;
+    margin-top: 28px;
     text-align: center;
-    color: var(--text-dim);
-    font-size: 12px;
-    line-height: 1.6;
+    color: var(--text-faint);
+    font-size: 11.5px;
+    line-height: 1.7;
+  }
+  footer.note code {
+    background: var(--surface-hover);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11px;
   }
 
-  @media (max-width: 520px) {
-    .month-totals { display: none; }
+  @media (max-width: 600px) {
+    #app { padding: 28px 14px 70px; }
+    header.topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .panel { padding: 18px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .btn-add { width: 100%; }
+    .month-totals { width: 100%; order: 3; }
+  }
+  @media (max-width: 380px) {
+    .summary-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -260,7 +309,9 @@
   <!-- Passcode gate -->
   <div id="lockScreen">
     <div class="lock-card">
-      <div class="lock-icon">🔒</div>
+      <div class="lock-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      </div>
       <h1>Money Collection Tracker</h1>
       <p>Enter the shared passcode to continue</p>
       <input type="password" id="passcodeInput" placeholder="Passcode" autocomplete="off" />
@@ -273,7 +324,7 @@
   <div id="app">
     <div class="wrap">
       <header class="topbar">
-        <h1><span class="emoji">💰</span> Money Collection Tracker</h1>
+        <h1>Money Collection Tracker</h1>
         <div class="muted"><span class="status-dot"></span> <span id="connStatus">Connected</span></div>
       </header>
 
@@ -326,8 +377,8 @@
         <h2>Monthly history</h2>
         <div id="monthsContainer">
           <div class="empty-state">
-            <div class="big">📭</div>
-            <div>No transactions yet — add your first one above.</div>
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg></div>
+            <div class="msg">No transactions yet — add your first one above.</div>
           </div>
         </div>
       </div>
@@ -397,6 +448,9 @@
   // ------------------------------------------------------------------
   // Main app logic
   // ------------------------------------------------------------------
+  const CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+  const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>';
+
   let started = false;
   function startApp() {
     if (started) return;
@@ -482,7 +536,7 @@
       snapshot.forEach(doc => rows.push({ id: doc.id, ...doc.data() }));
 
       if (rows.length === 0) {
-        monthsContainer.innerHTML = '<div class="empty-state"><div class="big">📭</div><div>No transactions yet — add your first one above.</div></div>';
+        monthsContainer.innerHTML = '<div class="empty-state"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg></div><div class="msg">No transactions yet — add your first one above.</div></div>';
         overallNet.textContent = fmt(0);
         overallSpent.textContent = fmt(0);
         overallReceived.textContent = fmt(0);
@@ -510,19 +564,20 @@
       }
 
       monthsContainer.innerHTML = '';
-      sortedMonths.forEach(ym => {
+      sortedMonths.forEach((ym, idx) => {
         const g = groups[ym];
         const net = g.spent - g.received;
         const isOpen = openMonths.has(ym);
 
         const groupEl = document.createElement('div');
         groupEl.className = 'month-group' + (isOpen ? ' open' : '');
+        groupEl.style.animationDelay = Math.min(idx * 40, 240) + 'ms';
 
-        const netColor = net > 0 ? 'style="color:var(--danger)"' : 'style="color:var(--accent2)"';
+        const netColor = net > 0 ? 'style="color:var(--danger)"' : 'style="color:var(--success)"';
 
         groupEl.innerHTML = `
           <div class="month-header">
-            <div class="month-title"><span class="chevron">▶</span> ${monthLabel(ym)}</div>
+            <div class="month-title"><span class="chevron">${CHEVRON_SVG}</span> ${monthLabel(ym)}</div>
             <div class="month-totals">
               <span class="muted">Spent: <b class="spent-col">${fmt(g.spent)}</b></span>
               <span class="muted">Received: <b class="received-col">${fmt(g.received)}</b></span>
@@ -530,22 +585,26 @@
             </div>
           </div>
           <div class="month-body">
-            <table>
-              <thead>
-                <tr><th>Date</th><th>Description</th><th class="num">Spent</th><th class="num">Received</th><th class="del-col"></th></tr>
-              </thead>
-              <tbody>
-                ${g.items.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(it => `
-                  <tr>
-                    <td>${it.date || ''}</td>
-                    <td>${escapeHtml(it.description || '')}</td>
-                    <td class="num spent-col">${it.spent ? fmt(it.spent) : '—'}</td>
-                    <td class="num received-col">${it.received ? fmt(it.received) : '—'}</td>
-                    <td class="del-col"><button class="del-btn" data-id="${it.id}" title="Delete this transaction">✕</button></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+            <div class="month-body-inner">
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr><th>Date</th><th>Description</th><th class="num">Spent</th><th class="num">Received</th><th class="del-col"></th></tr>
+                  </thead>
+                  <tbody>
+                    ${g.items.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(it => `
+                      <tr>
+                        <td>${it.date || ''}</td>
+                        <td>${escapeHtml(it.description || '')}</td>
+                        <td class="num spent-col">${it.spent ? fmt(it.spent) : '—'}</td>
+                        <td class="num received-col">${it.received ? fmt(it.received) : '—'}</td>
+                        <td class="del-col"><button class="del-btn" data-id="${it.id}" title="Delete this transaction">${TRASH_SVG}</button></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         `;
 
