@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Money Collection Tracker</title>
+<title>Keep Track</title>
 <style>
   :root {
     --bg: #0a0a0d;
@@ -34,6 +34,14 @@
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
   @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  @keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-7px); }
+    40%, 60% { transform: translateX(7px); }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .lock-card.shake { animation: shake .5s cubic-bezier(.36,.07,.19,.97) both; }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -109,7 +117,7 @@
     font-size: 14.5px;
     letter-spacing: .2px;
   }
-  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 6px 18px rgba(109,109,246,0.35); transform: translateY(-1px); }
   #lockError {
     color: var(--danger);
     font-size: 13px;
@@ -156,7 +164,7 @@
     animation: fadeInUp .5s var(--ease) backwards;
     transition: border-color .2s var(--ease), transform .2s var(--ease);
   }
-  .stat-card:hover { border-color: rgba(255,255,255,0.16); transform: translateY(-1px); }
+  .stat-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,0.28); }
   .stat-card:nth-child(1) { animation-delay: 0ms; }
   .stat-card:nth-child(2) { animation-delay: 40ms; }
   .stat-card:nth-child(3) { animation-delay: 80ms; }
@@ -212,7 +220,7 @@
     color: #08201a;
     font-size: 14px;
   }
-  .btn-add:hover { background: #29b07d; }
+  .btn-add:hover { background: #29b07d; box-shadow: 0 6px 18px rgba(48,196,141,0.3); transform: translateY(-1px); }
   #formMsg { font-size: 13px; margin-top: 10px; min-height: 16px; transition: opacity .2s var(--ease); }
   #formMsg.error { color: var(--danger); }
   #formMsg.ok { color: var(--success); }
@@ -233,7 +241,7 @@
     flex-wrap: wrap;
     transition: opacity .15s var(--ease);
   }
-  .month-header:hover { opacity: .85; }
+  .month-header:hover { opacity: .85; background: var(--surface-hover); border-radius: 8px; }
   .month-title { font-weight: 600; font-size: 14.5px; display: flex; align-items: center; gap: 8px; }
   .chevron { color: var(--text-faint); transition: transform .25s var(--ease); display: flex; }
   .chevron svg { width: 15px; height: 15px; }
@@ -268,8 +276,29 @@
     transition: color .15s var(--ease), background-color .15s var(--ease);
   }
   .del-btn svg { width: 15px; height: 15px; }
-  .del-btn:hover { color: var(--danger); background: rgba(242,84,92,0.1); }
+  .del-btn:hover { color: var(--danger); background: rgba(242,84,92,0.14); transform: scale(1.12); }
   .del-btn:disabled { opacity: .4; cursor: default; }
+
+  tr { transition: opacity .28s var(--ease), transform .28s var(--ease); }
+  tr.row-removing { opacity: 0; transform: translateX(10px); }
+
+  .panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .panel-header-row h2 { margin: 0; }
+  .btn-pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    background: var(--surface-hover);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 12.5px;
+  }
+  .btn-pdf svg { width: 14px; height: 14px; }
+  .btn-pdf:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(109,109,246,0.18); }
+  .btn-pdf:disabled { opacity: .5; cursor: default; transform: none; box-shadow: none; }
+  .btn-pdf .spin { animation: spin .8s linear infinite; }
 
   .empty-state { text-align: center; padding: 46px 20px; color: var(--text-dim); animation: fadeIn .4s var(--ease); }
   .empty-state .icon { width: 34px; height: 34px; margin: 0 auto 14px; color: var(--text-faint); }
@@ -312,7 +341,7 @@
       <div class="lock-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
       </div>
-      <h1>Money Collection Tracker</h1>
+      <h1>Keep Track</h1>
       <p>Enter the shared passcode to continue</p>
       <input type="password" id="passcodeInput" placeholder="Passcode" autocomplete="off" />
       <button class="btn-primary" id="unlockBtn">Unlock</button>
@@ -324,7 +353,7 @@
   <div id="app">
     <div class="wrap">
       <header class="topbar">
-        <h1>Money Collection Tracker</h1>
+        <h1>Keep Track</h1>
         <div class="muted"><span class="status-dot"></span> <span id="connStatus">Connected</span></div>
       </header>
 
@@ -374,7 +403,13 @@
       </div>
 
       <div class="panel" id="historyPanel">
-        <h2>Monthly history</h2>
+        <div class="panel-header-row">
+          <h2>Monthly history</h2>
+          <button class="btn-pdf" id="downloadPdfBtn" title="Download monthly history as PDF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download PDF</span>
+          </button>
+        </div>
         <div id="monthsContainer">
           <div class="empty-state">
             <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg></div>
@@ -390,6 +425,8 @@
     </div>
   </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf-autotable.min.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
   import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
@@ -420,6 +457,7 @@
   const passcodeInput = document.getElementById('passcodeInput');
   const unlockBtn = document.getElementById('unlockBtn');
   const lockError = document.getElementById('lockError');
+  const lockCard = document.querySelector('.lock-card');
 
   function tryUnlock() {
     const val = passcodeInput.value.trim();
@@ -432,6 +470,11 @@
       lockError.textContent = 'Incorrect passcode. Try again.';
       passcodeInput.value = '';
       passcodeInput.focus();
+      lockCard.classList.remove('shake');
+      // Force reflow so the animation replays on consecutive wrong attempts
+      void lockCard.offsetWidth;
+      lockCard.classList.add('shake');
+      lockCard.addEventListener('animationend', () => lockCard.classList.remove('shake'), { once: true });
     }
   }
   unlockBtn.addEventListener('click', tryUnlock);
@@ -475,6 +518,27 @@
     fDate.value = today.toISOString().slice(0, 10);
 
     const fmt = n => 'PKR ' + (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Animates a stat tile's displayed number from its current value up/down
+    // to the new value, so updates are visibly noticeable rather than an
+    // instant text swap.
+    function animateValue(el, toValue, isCurrency) {
+      const fromValue = parseFloat(String(el.textContent).replace(/[^0-9.-]/g, '')) || 0;
+      if (fromValue === toValue) {
+        el.textContent = isCurrency ? fmt(toValue) : String(toValue);
+        return;
+      }
+      const duration = 600;
+      const start = performance.now();
+      function step(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = fromValue + (toValue - fromValue) * eased;
+        el.textContent = isCurrency ? fmt(current) : String(Math.round(current));
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
 
     const monthLabel = (ym) => {
       const [y, m] = ym.split('-').map(Number);
@@ -526,9 +590,78 @@
       }
     });
 
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    downloadPdfBtn.addEventListener('click', () => {
+      if (!latestSortedMonths.length || !latestGroups) {
+        alert('No transactions to export yet.');
+        return;
+      }
+      downloadPdfBtn.disabled = true;
+      const originalHtml = downloadPdfBtn.innerHTML;
+      downloadPdfBtn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-9-9"/></svg><span>Generating…</span>';
+      try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        pdf.setFontSize(16);
+        pdf.setTextColor(20);
+        pdf.text('Keep Track — Monthly History', 14, 18);
+        pdf.setFontSize(10);
+        pdf.setTextColor(120);
+        pdf.text('Generated ' + new Date().toLocaleString(), 14, 24);
+
+        let cursorY = 32;
+        latestSortedMonths.forEach(ym => {
+          const g = latestGroups[ym];
+          const net = g.spent - g.received;
+
+          if (cursorY > pdf.internal.pageSize.getHeight() - 40) {
+            pdf.addPage();
+            cursorY = 20;
+          }
+
+          pdf.setFontSize(12);
+          pdf.setTextColor(20);
+          pdf.text(monthLabel(ym), 14, cursorY);
+          cursorY += 6;
+
+          const rows = g.items.slice()
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+            .map(it => [it.date || '', it.description || '', it.spent ? fmt(it.spent) : '—', it.received ? fmt(it.received) : '—']);
+
+          pdf.autoTable({
+            startY: cursorY,
+            head: [['Date', 'Description', 'Spent', 'Received']],
+            body: rows,
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { fillColor: [109, 109, 246] },
+            margin: { left: 14, right: 14 },
+          });
+
+          cursorY = pdf.lastAutoTable.finalY + 6;
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(60);
+          pdf.text(`Spent: ${fmt(g.spent)}   Received: ${fmt(g.received)}   To collect: ${fmt(net)}`, 14, cursorY);
+          cursorY += 12;
+        });
+
+        pdf.save('keep-track-monthly-history.pdf');
+      } catch (err) {
+        alert('Could not generate PDF: ' + err.message);
+      } finally {
+        downloadPdfBtn.disabled = false;
+        downloadPdfBtn.innerHTML = originalHtml;
+      }
+    });
+
     const q = query(collection(db, 'transactions'), orderBy('date', 'desc'));
     const openMonths = new Set();
     let firstLoad = true;
+    // Cache of the most recently rendered data, used to build the PDF export
+    // without re-querying Firestore.
+    let latestGroups = null;
+    let latestSortedMonths = [];
 
     onSnapshot(q, snapshot => {
       connStatus.textContent = 'Connected';
@@ -537,11 +670,13 @@
 
       if (rows.length === 0) {
         monthsContainer.innerHTML = '<div class="empty-state"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg></div><div class="msg">No transactions yet — add your first one above.</div></div>';
-        overallNet.textContent = fmt(0);
-        overallSpent.textContent = fmt(0);
-        overallReceived.textContent = fmt(0);
-        monthCount.textContent = '0';
+        animateValue(overallNet, 0, true);
+        animateValue(overallSpent, 0, true);
+        animateValue(overallReceived, 0, true);
+        animateValue(monthCount, 0, false);
         overallCard.className = 'stat-card settled';
+        latestGroups = null;
+        latestSortedMonths = [];
         return;
       }
 
@@ -562,6 +697,8 @@
         sortedMonths.slice(0, 1).forEach(m => openMonths.add(m));
         firstLoad = false;
       }
+      latestGroups = groups;
+      latestSortedMonths = sortedMonths;
 
       monthsContainer.innerHTML = '';
       sortedMonths.forEach((ym, idx) => {
@@ -620,11 +757,16 @@
             const id = btn.getAttribute('data-id');
             if (!confirm('Delete this transaction? This cannot be undone.')) return;
             btn.disabled = true;
+            const row = btn.closest('tr');
+            if (row) row.classList.add('row-removing');
             try {
+              // Let the fade-out play before the row disappears via re-render.
+              await new Promise(resolve => setTimeout(resolve, 220));
               await deleteDoc(doc(db, 'transactions', id));
             } catch (err) {
               alert('Could not delete: ' + err.message);
               btn.disabled = false;
+              if (row) row.classList.remove('row-removing');
             }
           });
         });
@@ -633,10 +775,10 @@
       });
 
       const overall = totalSpent - totalReceived;
-      overallNet.textContent = fmt(overall);
-      overallSpent.textContent = fmt(totalSpent);
-      overallReceived.textContent = fmt(totalReceived);
-      monthCount.textContent = String(sortedMonths.length);
+      animateValue(overallNet, overall, true);
+      animateValue(overallSpent, totalSpent, true);
+      animateValue(overallReceived, totalReceived, true);
+      animateValue(monthCount, sortedMonths.length, false);
       overallCard.className = 'stat-card' + (overall > 0 ? ' positive' : ' settled');
     }, err => {
       connStatus.textContent = 'Connection error';
